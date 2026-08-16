@@ -1,0 +1,18 @@
+{
+  "name": "@gewu/dsh-tools",
+  "description": "格物审视面插件：gewu_prep（HTML 逐页截图 + subagent_vision 简报契约生成，宿主直起 Chrome）+ gewu_locate（真值核验：文字定位到页码/行号）。让无视觉能力的主脑经 subagent_vision 完成视觉检验。",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "exports": { ".": "./index.js" },
+  "dsh": {
+    "verifiedAgainst": {
+      "dshVersion": "0.1.0-rc.6",
+      "evidenceLevel": "L1 源码级（cordis/defineTool 接口逐行核实）；L4 运行级：standalone 冒烟已测，DSH 挂载待会话重启验证"
+    }
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "^0.1.0-rc.6"
+  }
+}

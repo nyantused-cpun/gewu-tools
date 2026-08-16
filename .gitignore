@@ -1,0 +1,9 @@
+# 依赖（AiBridge Junction，指向宿主 @deepseek-ai 安装，不随项目分发）
+node_modules/
+
+# 临时产物
+_tmp_*
+*.log
+
+# 本地安装位（Junction 指向本目录，防递归收录）
+.dsh/gewu-tools/
