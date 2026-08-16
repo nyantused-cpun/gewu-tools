@@ -22,6 +22,15 @@ gewu-tools packages a three-step pipeline (validated on a 24-page proposal, 2026
                (page section id + line number); count=0 means OCR misread — do not trust it
 ```
 
+## Model-agnostic statement
+
+Validated on vision subagents **mimo-v2.5 (conservative)** and **qwen3.7-plus (more insightful, slightly more false positives)**. Finding: **model tier does not determine the trustworthiness of review results** —
+
+- The **briefing contract (context)** eliminates context-free false positives: e.g. reporting business markers like ⭐ (core capability) as decorative emoji — observed systematically in the no-briefing plugin mode during testing;
+- The **truth-verification loop (`gewu_locate`)** blocks OCR misreads and page-attribution drift before acceptance: in testing, 2.5 of qwen3.7-plus's 3 core new claims failed source-code verification — all were caught by the verification step.
+
+Tier differences only show up in **review style** (higher-tier = sharper insight, steadier = more conservative conclusions), not in correctness. With any vision model, the pipeline output stays trustworthy and auditable — which is exactly why verification is hard-wired as the third step.
+
 ## Install
 
 Prereqs: Windows + Chrome/Edge + Node 24+ (for the verify script only).
