@@ -5,6 +5,10 @@
   "type": "module",
   "main": "index.js",
   "exports": { ".": "./index.js" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nyantused-cpun/gewu-tools.git"
+  },
   "dsh": {
     "verifiedAgainst": {
       "dshVersion": "0.1.0-rc.6",
