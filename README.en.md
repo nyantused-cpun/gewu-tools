@@ -1,9 +1,20 @@
 # gewu-tools (格物)
 
+[![npm](https://img.shields.io/npm/v/gewu-tools.svg)](https://www.npmjs.com/package/gewu-tools)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **The Gewu Inspection Surface**: let text-only models in DSH complete visual-inspection tasks through vision subagents.
 
 > 格物 (Gewu): from the *Great Learning* — "investigate things to attain knowledge." Look carefully first, then conclude.
 > 中文: [README.md](README.md)
+
+## Quick install (npm)
+
+```powershell
+npm i gewu-tools
+pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install   # idempotent mount into DSH
+# Restart the DSH session; gewu_prep / gewu_locate appear in the tool catalog. -Verify = 3 greens.
+```
 
 ## Problem
 

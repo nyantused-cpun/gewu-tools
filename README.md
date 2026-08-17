@@ -1,9 +1,21 @@
 # 格物 gewu-tools
 
+[![npm](https://img.shields.io/npm/v/gewu-tools.svg)](https://www.npmjs.com/package/gewu-tools)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/nyantused-cpun/gewu-tools.svg)](https://github.com/nyantused-cpun/gewu-tools/releases)
+
 **格物审视面**：让 DSH 中无视觉能力的模型，通过视觉子代理完成需要「亲眼检查」的任务。
 
 > 格物：《大学》「格物致知，考察事物而后知」——先把东西看仔细，再下结论。
 > English: [README.en.md](README.en.md)
+
+## 快速安装（npm）
+
+```powershell
+npm i gewu-tools
+pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install   # 挂载进 DSH（幂等）
+# 重启 DSH 会话后 gewu_prep / gewu_locate 即出现在工具目录；-Verify 三绿即安装成功
+```
 
 ## 它解决什么问题
 
@@ -37,25 +49,25 @@ DSH 的会话主脑通常是**纯文本模型**——它读不了渲染出来的
 
 前置：Windows + Chrome/Edge + Node 24+（仅脚本验证用）。
 
-**方式一：社区通道**（若已接入 awesome-dsh-plugins 生态）
+**方式一：npm**（推荐，一行安装 + 一行挂载）
+
+```powershell
+npm i gewu-tools
+pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install
+```
+
+**方式二：社区通道**（若已接入 awesome-dsh-plugins 生态）
 
 ```powershell
 pwsh <workspace>\.dsh\setup\install-community-plugins.ps1 -Install
 ```
 
-**方式二：独立脚本**（推荐，随项目分发）
+**方式三：独立脚本**（随项目分发）
 
 ```powershell
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Install    # 幂等
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Verify     # 只验证
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Uninstall  # 卸载
-```
-
-**方式三：npm**（源码分发 `npm i gewu-tools`，安装仍走独立脚本）
-
-```powershell
-npm i gewu-tools
-# 包内自带安装脚本：node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install
 ```
 
 安装脚本做的事：在 DSH 的 agent preset（默认 pre-sales，可用环境变量 `GEWU_PRESET` 覆盖）里追加 `gewu-tools` 挂载行，指向 `<workspace>\.dsh\gewu-tools`（安装位，项目目录的 Junction）。
