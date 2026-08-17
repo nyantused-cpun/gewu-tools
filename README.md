@@ -51,6 +51,13 @@ pwsh gewu\scripts\install-gewu-plugins.ps1 -Verify     # 只验证
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Uninstall  # 卸载
 ```
 
+**方式三：npm**（源码分发 `npm i gewu-tools`，安装仍走独立脚本）
+
+```powershell
+npm i gewu-tools
+# 包内自带安装脚本：node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install
+```
+
 安装脚本做的事：在 DSH 的 agent preset（默认 pre-sales，可用环境变量 `GEWU_PRESET` 覆盖）里追加 `gewu-tools` 挂载行，指向 `<workspace>\.dsh\gewu-tools`（安装位，项目目录的 Junction）。
 
 **安装后必须重启 DSH 会话**（host 插件无热更新）。验证：`install-gewu-plugins.ps1 -Verify` 应三绿（preset 挂载行 / junction 链 / import 加载）。
