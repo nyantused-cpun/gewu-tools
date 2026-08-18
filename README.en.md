@@ -13,6 +13,8 @@
 ```powershell
 npm i gewu-tools
 pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install   # idempotent mount into DSH
+# Or install directly through the DSH plugin manager (requires the dsh.bundle manifest)
+dsh plugin add gewu-tools
 # Restart the DSH session; gewu_prep / gewu_locate appear in the tool catalog. -Verify = 4 greens.
 # Optional: inject a custom preset (defaults to community, zero injection; GEWU_BRIEF_PRESET also works)
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Install -Preset <preset-file-path>
@@ -49,6 +51,9 @@ Tier differences only show up in **review style** (higher-tier = sharper insight
 Prereqs: Windows + Chrome/Edge + Node 24+ (for the verify script only).
 
 ```powershell
+# Direct install through the DSH plugin manager (requires the dsh.bundle manifest)
+dsh plugin add gewu-tools
+# Or use the bundled installer for local junction mounting and custom presets
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Install    # idempotent
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Verify     # verify only
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Uninstall  # remove
@@ -140,7 +145,8 @@ node gewu\index.js <any HTML with section anchors> [outDir]   # standalone smoke
 ```
 gewu/
 ├── index.js                # plugin body (cordis + defineTool, standalone CLI entry)
-├── package.json            # @gewu/dsh-tools
+├── package.json            # gewu-tools (dsh.bundle manifest)
+├── cordis.patch.yml        # dsh plugin add mount patch
 ├── presets/                # built-in community preset and preset contract
 ├── README.md / README.en.md
 ├── CHANGELOG.md

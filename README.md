@@ -14,6 +14,8 @@
 ```powershell
 npm i gewu-tools
 pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install   # 挂载进 DSH（幂等）
+# 或使用 DSH 插件管理器直接安装（需要 dsh.bundle manifest；安装后同样重启会话）
+dsh plugin add gewu-tools
 # 重启 DSH 会话后 gewu_prep / gewu_locate 即出现在工具目录；-Verify 四绿即安装成功
 # 可选：注入自定义规范 preset（默认 community 零注入；也可用环境变量 GEWU_BRIEF_PRESET 指定）
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Install -Preset <preset文件路径>
@@ -56,6 +58,8 @@ DSH 的会话主脑通常是**纯文本模型**——它读不了渲染出来的
 ```powershell
 npm i gewu-tools
 pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install
+# 或使用 DSH 插件管理器直接安装（需要 dsh.bundle manifest）
+dsh plugin add gewu-tools
 # 可选：注入自定义规范 preset（默认 community 零注入；也可用环境变量 GEWU_BRIEF_PRESET 指定）
 pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install -Preset <preset文件路径>
 ```
@@ -181,7 +185,8 @@ node gewu\index.js <任意带锚点的 HTML 路径> [输出目录]
 ```
 gewu/
 ├── index.js                # 插件本体（cordis + defineTool，含 standalone CLI 入口）
-├── package.json            # @gewu/dsh-tools
+├── package.json            # gewu-tools（dsh.bundle manifest）
+├── cordis.patch.yml        # dsh plugin add 装配补丁
 ├── presets/                # 内置 community preset 与 preset 契约
 ├── README.md / README.en.md
 ├── CHANGELOG.md
