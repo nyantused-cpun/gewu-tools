@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 1.1.0 - 2026-08-17
+
+- preset 扩展点：config.presetPath / GEWU_BRIEF_PRESET / community 三级 + 契约校验 + 降级
+- BRIEFING_VERSION:1 进简报首部
+- gewu_prep 返回增 preset / preset_degraded / preset_error
+- standalone CLI 化：--prep / --locate / 退出码 0/1/2 / 产物落盘
+- 安装脚本 -Preset 参数 + -Verify 四绿
+- 社区回归门禁：community 下 briefing 与 1.0.0 逐字等价除新增行
+
 ## 1.0.0 — 2026-08-16 初始发布
 
 - 独立项目建立：本目录为单一事实源，安装位 `<workspace>\.dsh\gewu-tools` 与社区通道为 Junction 指向本项目

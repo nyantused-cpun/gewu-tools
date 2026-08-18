@@ -13,7 +13,9 @@
 ```powershell
 npm i gewu-tools
 pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install   # idempotent mount into DSH
-# Restart the DSH session; gewu_prep / gewu_locate appear in the tool catalog. -Verify = 3 greens.
+# Restart the DSH session; gewu_prep / gewu_locate appear in the tool catalog. -Verify = 4 greens.
+# Optional: inject a custom preset (defaults to community, zero injection; GEWU_BRIEF_PRESET also works)
+pwsh gewu\scripts\install-gewu-plugins.ps1 -Install -Preset <preset-file-path>
 ```
 
 ## Problem
@@ -50,11 +52,14 @@ Prereqs: Windows + Chrome/Edge + Node 24+ (for the verify script only).
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Install    # idempotent
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Verify     # verify only
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Uninstall  # remove
+pwsh gewu\scripts\install-gewu-plugins.ps1 -Install -Preset <preset-file-path>  # optional custom preset
 ```
+
+`-Preset` injects a custom briefing preset. If omitted, the installer uses `community` (zero injection); you can also set the `GEWU_BRIEF_PRESET` environment variable instead.
 
 The script appends a `gewu-tools` mount row to the DSH agent preset (default `pre-sales`, override with env `GEWU_PRESET`), pointing at `<workspace>\.dsh\gewu-tools` (a Junction to this project).
 
-**Restart the DSH session after install** (host plugins have no HMR).
+**Restart the DSH session after install** (host plugins have no HMR). Verification: `install-gewu-plugins.ps1 -Verify` expects 4 greens (preset mount row / junction chain / import load / preset loading).
 
 ## Usage (main-agent view)
 
@@ -64,6 +69,56 @@ The script appends a `gewu-tools` mount row to the DSH agent preset (default `pr
 2. Call a vision subagent with the briefing as its prompt → per-page issue list + conclusions
 3. gewu_locate(html_path=..., needle=<text/number from the findings>) for every key finding
 ```
+
+## Custom preset injection
+
+A preset is gewu-tools' extension point: put your own design standards or acceptance criteria into a preset file, and `gewu_prep` injects them into the briefing so the vision subagent reviews against the same yardstick. The default `community` preset injects nothing and keeps the 1.0.0 community baseline.
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Non-empty preset name. |
+| `version` | string | Non-empty preset version. |
+| `defaultFocus` | string \| null | Overrides the default focus list; pass `null` to keep the built-in default. |
+| `sections` | string[] | Sections injected into the briefing (design standard / acceptance criteria); each section ≤ 2,000 characters, total ≤ 8,000 characters. |
+| `dispatchHints` | string \| null | Dispatch hints (e.g. how many pages to review per pass); nullable. |
+| `requires` | object | Reserved extension dependency declaration; an invalid object causes degradation. |
+
+Minimal example `brief-preset.js`:
+
+```js
+export default {
+  name: "my-design-standard",
+  version: "1.0.0",
+  defaultFocus: "layout consistency, information density, chart readability",
+  sections: [
+    "Visual standard: primary color #123456, left-aligned titles, 24px card spacing.",
+    "Acceptance criteria: each page must have one core claim; key data must match business-marker semantics."
+  ],
+  dispatchHints: null,
+  requires: {}
+};
+```
+
+If a preset file is invalid (not an object, missing `name`/`version`, wrong field types, `sections` too long, etc.), gewu-tools falls back to `community` and returns `preset_degraded: true` with `preset_error` explaining why.
+
+## CLI usage (cross-host)
+
+`index.js` works without DSH. Non-DSH hosts (Trae/Codex/Kimi, etc.) can use this CLI to get the same screenshot + briefing + verification artifacts as the plugin.
+
+```powershell
+# Screenshot + briefing (same source as gewu_prep)
+node gewu\index.js --prep <html> [--client <client>] [--background "..."] [--focus "..."] [--out-dir <dir>] [--width <n>] [--height <n>] [--nav-offset <n>]
+
+# Truth verification (same source as gewu_locate)
+node gewu\index.js --locate <html> --needle "<text/number>" [--max-matches <n>]
+
+# Smoke alias (old positional form)
+node gewu\index.js <html> [outDir]
+```
+
+Artifacts: `--prep` writes `prep_result.json` + `briefing.txt` to `--out-dir` (default `_tmp_vision_test/<file>_shots`); `--locate` writes `locate_result.json` to `_tmp_vision_test/<file>_locate/`.
+
+Exit codes: `0` success; `1` runtime/business failure (HTML missing, screenshot failure, etc.); `2` usage error.
 
 ## How it works
 
@@ -80,12 +135,34 @@ The script appends a `gewu-tools` mount row to the DSH agent preset (default `pr
 node gewu\index.js <any HTML with section anchors> [outDir]   # standalone smoke, no DSH needed
 ```
 
+## Directory structure
+
+```
+gewu/
+├── index.js                # plugin body (cordis + defineTool, standalone CLI entry)
+├── package.json            # @gewu/dsh-tools
+├── presets/                # built-in community preset and preset contract
+├── README.md / README.en.md
+├── CHANGELOG.md
+├── LICENSE                 # MIT
+├── docs/TESTING.md         # testing methodology and results
+└── scripts/install-gewu-plugins.ps1   # install script (Install/Verify/Uninstall/DryRun)
+```
+
 ## Compatibility
 
 - DSH 0.1.0-rc.6 (cordis plugin + defineTool surface)
 - Peer dependency: `@deepseek-ai/dsh-tools` only (resolved via the workspace AiBridge junction)
 - Browser: auto-detects Chrome/Edge, no config
 
+## Related links
+
+The following projects complement the gewu ecosystem.
+
+- [Lanting Folio](https://github.com/nyantused-cpun/folio): deep-context review engine
+- [dsh-vision-toolkit](https://github.com/Anionex/dsh-vision-toolkit): general-purpose vision toolbox; complementary to this project — it lets models see, gewu makes reviews trustworthy
+- [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)
+
 ## License
 
-MIT — see [LICENSE](LICENSE). Version 1.0.0 (2026-08-16).
+MIT — see [LICENSE](LICENSE). Version 1.1.0 (2026-08-17).

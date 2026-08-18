@@ -14,7 +14,9 @@
 ```powershell
 npm i gewu-tools
 pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install   # 挂载进 DSH（幂等）
-# 重启 DSH 会话后 gewu_prep / gewu_locate 即出现在工具目录；-Verify 三绿即安装成功
+# 重启 DSH 会话后 gewu_prep / gewu_locate 即出现在工具目录；-Verify 四绿即安装成功
+# 可选：注入自定义规范 preset（默认 community 零注入；也可用环境变量 GEWU_BRIEF_PRESET 指定）
+pwsh gewu\scripts\install-gewu-plugins.ps1 -Install -Preset <preset文件路径>
 ```
 
 ## 它解决什么问题
@@ -54,6 +56,8 @@ DSH 的会话主脑通常是**纯文本模型**——它读不了渲染出来的
 ```powershell
 npm i gewu-tools
 pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install
+# 可选：注入自定义规范 preset（默认 community 零注入；也可用环境变量 GEWU_BRIEF_PRESET 指定）
+pwsh node_modules\gewu-tools\scripts\install-gewu-plugins.ps1 -Install -Preset <preset文件路径>
 ```
 
 **方式二：社区通道**（若已接入 awesome-dsh-plugins 生态）
@@ -68,11 +72,14 @@ pwsh <workspace>\.dsh\setup\install-community-plugins.ps1 -Install
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Install    # 幂等
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Verify     # 只验证
 pwsh gewu\scripts\install-gewu-plugins.ps1 -Uninstall  # 卸载
+pwsh gewu\scripts\install-gewu-plugins.ps1 -Install -Preset <preset文件路径>  # 可选：注入自定义规范
 ```
+
+`-Preset` 指定自定义规范 preset（默认 `community` 零注入；也可用环境变量 `GEWU_BRIEF_PRESET` 指定）。
 
 安装脚本做的事：在 DSH 的 agent preset（默认 pre-sales，可用环境变量 `GEWU_PRESET` 覆盖）里追加 `gewu-tools` 挂载行，指向 `<workspace>\.dsh\gewu-tools`（安装位，项目目录的 Junction）。
 
-**安装后必须重启 DSH 会话**（host 插件无热更新）。验证：`install-gewu-plugins.ps1 -Verify` 应三绿（preset 挂载行 / junction 链 / import 加载）。
+**安装后必须重启 DSH 会话**（host 插件无热更新）。验证：`install-gewu-plugins.ps1 -Verify` 应四绿（preset 挂载行 / junction 链 / import 加载 / preset 预设加载）。
 
 ## 使用（主代理视角）
 
@@ -102,6 +109,56 @@ pwsh gewu\scripts\install-gewu-plugins.ps1 -Uninstall  # 卸载
 
 **gewu_locate 参数**：`html_path`、`needle`（待核验文字/数字）、`max_matches`（默认 8）。
 
+## 自定义规范注入（preset）
+
+preset 是格物的扩展点：你可以把自己的设计规范、验收标准写成一份 preset 文件，注入到 `gewu_prep` 生成的简报里，让视觉子代理按同一把尺子审阅你的页面。默认使用内置 `community` preset（零注入，保持与 1.0.0 一致的社区基线）。
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `name` | string | 非空字符串，preset 名称 |
+| `version` | string | 非空字符串，preset 版本 |
+| `defaultFocus` | string \| null | 覆盖默认关注问题清单；传 `null` 使用内置默认 |
+| `sections` | string[] | 注入简报正文的规范/验收标准段落；单段 ≤ 2000 字，总长 ≤ 8000 字 |
+| `dispatchHints` | string \| null | 调度提示（例如建议一次吃多少页）；可空 |
+| `requires` | object | 预留扩展依赖声明；非法对象会导致降级 |
+
+最小示例 `brief-preset.js`：
+
+```js
+export default {
+  name: "my-design-standard",
+  version: "1.0.0",
+  defaultFocus: "版式一致性、信息密度、图表可读性",
+  sections: [
+    "视觉规范：主色 #123456，标题左对齐，卡片间距 24px。",
+    "验收标准：每页必须有一条核心论断，核心数据需与业务标记语义一致。"
+  ],
+  dispatchHints: null,
+  requires: {}
+};
+```
+
+preset 文件非法时（非对象、缺少 `name`/`version`、字段类型不符、`sections` 超长等），格物自动回退 `community`，并在 `gewu_prep` 返回 `preset_degraded: true` 与 `preset_error` 说明原因。
+
+## CLI 用法（跨宿主）
+
+`index.js` 可脱离 DSH 独立运行；无 DSH 宿主（Trae/Codex/Kimi 等）可经此 CLI 获得与插件同源的截图+简报+核验产物。
+
+```powershell
+# 截图 + 简报（与 gewu_prep 同源）
+node gewu\index.js --prep <html> [--client <客户>] [--background "..."] [--focus "..."] [--out-dir <dir>] [--width <n>] [--height <n>] [--nav-offset <n>]
+
+# 真值核验（与 gewu_locate 同源）
+node gewu\index.js --locate <html> --needle "<文本/数字>" [--max-matches <n>]
+
+# 冒烟别名（旧位置参数，等同快速自检）
+node gewu\index.js <html> [outDir]
+```
+
+产物：`--prep` 在 `--out-dir`（默认 `_tmp_vision_test/<文件名>_shots`）写 `prep_result.json` + `briefing.txt`；`--locate` 在 `_tmp_vision_test/<文件名>_locate/` 写 `locate_result.json`。
+
+退出码：`0` 成功；`1` 业务失败（HTML 不存在、截图失败等）；`2` 参数错误。
+
 ## 工作原理
 
 - **截图**：读 HTML 的 `<section>` 锚点（优先 `v2-page` 类），逐页用 headless Chrome 视口截图；sticky 导航经 iframe 上移推出画面；无锚点自动降级整页长截图。宿主进程直起 Chrome——不受 DSH 受限沙箱对子进程命名管道的限制。
@@ -123,8 +180,9 @@ node gewu\index.js <任意带锚点的 HTML 路径> [输出目录]
 
 ```
 gewu/
-├── index.js                # 插件本体（cordis + defineTool，含 standalone 冒烟入口）
+├── index.js                # 插件本体（cordis + defineTool，含 standalone CLI 入口）
 ├── package.json            # @gewu/dsh-tools
+├── presets/                # 内置 community preset 与 preset 契约
 ├── README.md / README.en.md
 ├── CHANGELOG.md
 ├── LICENSE                 # MIT
@@ -138,8 +196,16 @@ gewu/
 - 依赖：仅 `@deepseek-ai/dsh-tools`（peer，经工作区 AiBridge 解析）
 - 浏览器：自动探测 Chrome/Edge（Program Files / LocalAppData），无需配置
 
+## 友情链接
+
+以下项目与格物生态互补，欢迎关注。
+
+- [兰亭 Folio](https://github.com/nyantused-cpun/folio)：深度语境审阅引擎
+- [dsh-vision-toolkit](https://github.com/Anionex/dsh-vision-toolkit)：通用视觉工具箱，与本项目互补——它让模型看见，格物让审阅可信
+- [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)
+
 ## 维护与许可
 
-- 版本：1.0.0（2026-08-16 初始发布）；变更见 CHANGELOG.md
+- 版本：1.1.0（2026-08-17）；变更见 CHANGELOG.md
 - 许可证：MIT
 - 临时文件：wrapper 与 Chrome profile 自动清理
