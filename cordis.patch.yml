@@ -1,0 +1,9 @@
+# gewu-tools 激活 patch（dsh.bundle.patch 声明于此）
+#
+# 写法依据：cordis-plugin-include applyEntryPatches 语义（0.1.0-rc.6 源码级核实）
+#   - 新增插件 entry 必须用「无 id 的 insert」（直接追加到 entry 列表）
+#   - 安装：`dsh plugin add gewu-tools` 通过本 manifest 自动装配该 entry
+- insert:
+    - id: gewu-tools
+      name: "gewu-tools"
+      config: {}
