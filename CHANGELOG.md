@@ -8,6 +8,7 @@
 - standalone CLI 化：--prep / --locate / 退出码 0/1/2 / 产物落盘
 - 安装脚本 -Preset 参数 + -Verify 四绿
 - 社区回归门禁：community 下 briefing 与 1.0.0 逐字等价除新增行
+- 社区收录兼容：package.json 增 `dsh.bundle` manifest + `cordis.patch.yml`，支持 `dsh plugin add gewu-tools`
 
 ## 1.0.0 — 2026-08-16 初始发布
 
